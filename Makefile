@@ -1,7 +1,7 @@
 NAME    := puzzle
 TARBALL := pmurray1_mmahoney_jromph_$(NAME).tar.gz
 
-SRC     := main.c puzzle.c piece.c edge.c
+SRC     := main.c puzzle.c piece.c edge.c permutations.c
 HEADERS := headers.h
 FILES   := Makefile
 
