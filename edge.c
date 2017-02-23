@@ -2,7 +2,11 @@
 
 
 int
-edge_equal(struct Edge* a, struct Edge* b)
+edge_valid(struct Edge* a, struct Edge* b)
 {
-	return 0;
+	if ((a->color != b->color) || (a->type == b->type))
+	{
+		return 0;
+	}
+	return 1;
 }

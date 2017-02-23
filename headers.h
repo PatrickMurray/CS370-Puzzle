@@ -78,18 +78,12 @@ void           puzzle_print(struct Puzzle*);
 void           puzzle_print_matrix(struct Puzzle*);
 
 
-/* edge.c */
-int edge_equal(struct Edge*, struct Edge*);
-
-
 /* piece.c */
 void piece_rotate(struct Piece*, int);
 
 
-/* puzzle.c */
-
-
-/* output.c */
+/* edge.c */
+int edge_valid(struct Edge*, struct Edge*);
 
 
 #endif
