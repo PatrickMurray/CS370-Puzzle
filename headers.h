@@ -22,8 +22,6 @@
 #include <time.h>
 
 
-#define BENCHMARK_MODE 1
-
 #define TOP    0
 #define RIGHT  1
 #define BOTTOM 2

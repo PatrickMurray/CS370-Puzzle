@@ -1,3 +1,7 @@
+#ifndef _edge_c_
+#define _edge_c_
+
+
 #include "headers.h"
 
 
@@ -10,3 +14,6 @@ edge_valid(struct Edge* a, struct Edge* b)
 	}
 	return 1;
 }
+
+
+#endif
