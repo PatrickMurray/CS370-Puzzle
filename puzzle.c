@@ -5,25 +5,13 @@
 #include "headers.h"
 
 
-struct Puzzle*
-puzzle_parse(char* filepath)
+void
+puzzle_parse(char* filepath, struct Puzzle* puzzle)
 {
-	struct Puzzle* puzzle;
-	int            fd;
-	short          piece;
-	char           buffer[12]; /* one line */
-	ssize_t        bytes_read;
-
-	if ((puzzle = malloc(sizeof(struct Puzzle))) == NULL)
-	{
-		fprintf(
-			stderr,
-			"%s: unable to allocate memory: %s\n",
-			getprogname(),
-			strerror(errno)
-		);
-		exit(EXIT_FAILURE);
-	}
+	int     fd;
+	short   piece;
+	char    buffer[12]; /* one line */
+	ssize_t bytes_read;
 
 	if ((fd = open(filepath, O_RDONLY)) == -1)
 	{
@@ -37,7 +25,7 @@ puzzle_parse(char* filepath)
 		exit(EXIT_FAILURE);
 	}
 
-	for (piece = 0; piece < 9; piece++)
+	for (piece = PIECE_TOP_LEFT; piece <= PIECE_BOTTOM_RIGHT; piece++)
 	{
 		if ((bytes_read = read(fd, buffer, sizeof(buffer))) == -1)
 		{
@@ -53,35 +41,35 @@ puzzle_parse(char* filepath)
 		puzzle->pieces[piece].identifier = piece;
 		
 		/* top */
-		puzzle->pieces[piece].edges[TOP].color = buffer[0];
-		puzzle->pieces[piece].edges[TOP].type = 0;
+		puzzle->pieces[piece].edges[EDGE_TOP].color = buffer[0];
+		puzzle->pieces[piece].edges[EDGE_TOP].type = 0;
 		if (buffer[1] == '1')
 		{
-			puzzle->pieces[piece].edges[TOP].type = 1;
+			puzzle->pieces[piece].edges[EDGE_TOP].type = 1;
 		}
 
 		/* right */
-		puzzle->pieces[piece].edges[RIGHT].color = buffer[3];
-		puzzle->pieces[piece].edges[RIGHT].type = 0;
+		puzzle->pieces[piece].edges[EDGE_RIGHT].color = buffer[3];
+		puzzle->pieces[piece].edges[EDGE_RIGHT].type = 0;
 		if (buffer[4] == '1')
 		{
-			puzzle->pieces[piece].edges[RIGHT].type = 1;
+			puzzle->pieces[piece].edges[EDGE_RIGHT].type = 1;
 		}
 
 		/* bottom */
-		puzzle->pieces[piece].edges[BOTTOM].color = buffer[6];
-		puzzle->pieces[piece].edges[BOTTOM].type = 0;
+		puzzle->pieces[piece].edges[EDGE_BOTTOM].color = buffer[6];
+		puzzle->pieces[piece].edges[EDGE_BOTTOM].type = 0;
 		if (buffer[7] == '1')
 		{
-			puzzle->pieces[piece].edges[BOTTOM].type = 1;
+			puzzle->pieces[piece].edges[EDGE_BOTTOM].type = 1;
 		}
 
 		/* left */
-		puzzle->pieces[piece].edges[LEFT].color = buffer[9];
-		puzzle->pieces[piece].edges[LEFT].type = 0;
+		puzzle->pieces[piece].edges[EDGE_LEFT].color = buffer[9];
+		puzzle->pieces[piece].edges[EDGE_LEFT].type = 0;
 		if (buffer[10] == '1')
 		{
-			puzzle->pieces[piece].edges[LEFT].type = 1;
+			puzzle->pieces[piece].edges[EDGE_LEFT].type = 1;
 		}
 	}
 
@@ -96,7 +84,51 @@ puzzle_parse(char* filepath)
 		exit(EXIT_FAILURE);
 	}
 
-	return puzzle;
+	return;
+}
+
+
+int
+puzzle_valid(struct Puzzle* puzzle)
+{
+	/* Top Left Corner Piece */
+	if (edge_valid(&puzzle->pieces[PIECE_TOP_LEFT].edges[EDGE_RIGHT],  &puzzle->pieces[PIECE_TOP_CENTER].edges[EDGE_LEFT]) == 0 ||
+	    edge_valid(&puzzle->pieces[PIECE_TOP_LEFT].edges[EDGE_BOTTOM], &puzzle->pieces[PIECE_MIDDLE_LEFT].edges[EDGE_TOP]) == 0)
+	{
+		return 0;
+	}
+
+	/* Top Right Corner Piece */
+	if (edge_valid(&puzzle->pieces[PIECE_TOP_RIGHT].edges[EDGE_BOTTOM], &puzzle->pieces[PIECE_MIDDLE_RIGHT].edges[EDGE_TOP]) == 0 ||
+	    edge_valid(&puzzle->pieces[PIECE_TOP_RIGHT].edges[EDGE_LEFT],   &puzzle->pieces[PIECE_TOP_CENTER].edges[EDGE_RIGHT]) == 0)
+	{
+		return 0;
+	}
+
+	/* Center */
+	if (edge_valid(&puzzle->pieces[PIECE_MIDDLE_CENTER].edges[EDGE_TOP],    &puzzle->pieces[PIECE_TOP_CENTER].edges[EDGE_BOTTOM]) == 0 ||
+	    edge_valid(&puzzle->pieces[PIECE_MIDDLE_CENTER].edges[EDGE_RIGHT],  &puzzle->pieces[PIECE_MIDDLE_RIGHT].edges[EDGE_LEFT]) == 0 ||
+	    edge_valid(&puzzle->pieces[PIECE_MIDDLE_CENTER].edges[EDGE_BOTTOM], &puzzle->pieces[PIECE_BOTTOM_CENTER].edges[EDGE_TOP]) == 0 ||
+	    edge_valid(&puzzle->pieces[PIECE_MIDDLE_CENTER].edges[EDGE_LEFT],   &puzzle->pieces[PIECE_MIDDLE_LEFT].edges[EDGE_RIGHT]) == 0)
+	{
+		return 0;
+	}
+
+	/* Bottom Left Corner Piece */
+	if (edge_valid(&puzzle->pieces[PIECE_BOTTOM_LEFT].edges[EDGE_TOP],   &puzzle->pieces[PIECE_MIDDLE_LEFT].edges[EDGE_BOTTOM]) == 0 ||
+	    edge_valid(&puzzle->pieces[PIECE_BOTTOM_LEFT].edges[EDGE_RIGHT], &puzzle->pieces[PIECE_BOTTOM_CENTER].edges[EDGE_LEFT]) == 0)
+	{
+		return 0;
+	}
+
+	/* Bottom Right Corner Piece */
+	if (edge_valid(&puzzle->pieces[PIECE_BOTTOM_RIGHT].edges[EDGE_TOP],  &puzzle->pieces[PIECE_MIDDLE_RIGHT].edges[EDGE_BOTTOM]) == 0 ||
+	    edge_valid(&puzzle->pieces[PIECE_BOTTOM_RIGHT].edges[EDGE_LEFT], &puzzle->pieces[PIECE_BOTTOM_CENTER].edges[EDGE_RIGHT]) == 0)
+	{
+		return 0;
+	}
+
+	return 1;
 }
 
 
@@ -108,19 +140,19 @@ puzzle_print(struct Puzzle* puzzle) /* TODO add solution array pointer */
 	printf("Input tiles:\n");
 
 	/*  */
-	for (piece = 0; piece < 9; piece++)
+	for (piece = PIECE_TOP_LEFT; piece <= PIECE_BOTTOM_RIGHT; piece++)
 	{
 		printf(
 			"%i. <%c%hu, %c%hu, %c%hu, %c%hu>\n",
 			piece + 1,
-			puzzle->pieces[piece].edges[TOP].color,
-			puzzle->pieces[piece].edges[TOP].type,
-			puzzle->pieces[piece].edges[RIGHT].color,
-			puzzle->pieces[piece].edges[RIGHT].type,
-			puzzle->pieces[piece].edges[BOTTOM].color,
-			puzzle->pieces[piece].edges[BOTTOM].type,
-			puzzle->pieces[piece].edges[LEFT].color,
-			puzzle->pieces[piece].edges[LEFT].type
+			puzzle->pieces[piece].edges[EDGE_TOP].color,
+			puzzle->pieces[piece].edges[EDGE_TOP].type,
+			puzzle->pieces[piece].edges[EDGE_RIGHT].color,
+			puzzle->pieces[piece].edges[EDGE_RIGHT].type,
+			puzzle->pieces[piece].edges[EDGE_BOTTOM].color,
+			puzzle->pieces[piece].edges[EDGE_BOTTOM].type,
+			puzzle->pieces[piece].edges[EDGE_LEFT].color,
+			puzzle->pieces[piece].edges[EDGE_LEFT].type
 		);
 	}
 
@@ -136,7 +168,7 @@ puzzle_print_matrix(struct Puzzle* puzzle)
 	short piece;
 
 	/* print the solutions - TODO for-loop here*/
-	for (piece = 0; piece < 9; piece += 3)
+	for (piece = PIECE_TOP_LEFT; piece <= PIECE_BOTTOM_RIGHT; piece += 3)
 	{
 		printf("+--------+--------+--------+\n");
 
@@ -144,48 +176,48 @@ puzzle_print_matrix(struct Puzzle* puzzle)
 		printf(
 			"|%hu  %c%hu   |%hu  %c%hu   |%hu  %c%hu   |\n",
 			puzzle->pieces[piece].identifier,
-			puzzle->pieces[piece].edges[TOP].color,
-			puzzle->pieces[piece].edges[TOP].type,
+			puzzle->pieces[piece].edges[EDGE_TOP].color,
+			puzzle->pieces[piece].edges[EDGE_TOP].type,
 
 			puzzle->pieces[piece+1].identifier,
-			puzzle->pieces[piece+1].edges[TOP].color,
-			puzzle->pieces[piece+1].edges[TOP].type,
+			puzzle->pieces[piece+1].edges[EDGE_TOP].color,
+			puzzle->pieces[piece+1].edges[EDGE_TOP].type,
 
 			puzzle->pieces[piece+2].identifier,
-			puzzle->pieces[piece+2].edges[TOP].color,
-			puzzle->pieces[piece+2].edges[TOP].type
+			puzzle->pieces[piece+2].edges[EDGE_TOP].color,
+			puzzle->pieces[piece+2].edges[EDGE_TOP].type
 		);
 
 		/* print the left and right edge */
 		printf(
 			"|%c%hu    %c%hu|%c%hu    %c%hu|%c%hu    %c%hu|\n",
-			puzzle->pieces[piece].edges[LEFT].color,
-			puzzle->pieces[piece].edges[LEFT].type,
-			puzzle->pieces[piece].edges[RIGHT].color,
-			puzzle->pieces[piece].edges[RIGHT].type,
+			puzzle->pieces[piece].edges[EDGE_LEFT].color,
+			puzzle->pieces[piece].edges[EDGE_LEFT].type,
+			puzzle->pieces[piece].edges[EDGE_RIGHT].color,
+			puzzle->pieces[piece].edges[EDGE_RIGHT].type,
 
-			puzzle->pieces[piece+1].edges[LEFT].color,
-			puzzle->pieces[piece+1].edges[LEFT].type,
-			puzzle->pieces[piece+1].edges[RIGHT].color,
-			puzzle->pieces[piece+1].edges[RIGHT].type,
+			puzzle->pieces[piece+1].edges[EDGE_LEFT].color,
+			puzzle->pieces[piece+1].edges[EDGE_LEFT].type,
+			puzzle->pieces[piece+1].edges[EDGE_RIGHT].color,
+			puzzle->pieces[piece+1].edges[EDGE_RIGHT].type,
 
-			puzzle->pieces[piece+2].edges[LEFT].color,
-			puzzle->pieces[piece+2].edges[LEFT].type,
-			puzzle->pieces[piece+2].edges[RIGHT].color,
-			puzzle->pieces[piece+2].edges[RIGHT].type
+			puzzle->pieces[piece+2].edges[EDGE_LEFT].color,
+			puzzle->pieces[piece+2].edges[EDGE_LEFT].type,
+			puzzle->pieces[piece+2].edges[EDGE_RIGHT].color,
+			puzzle->pieces[piece+2].edges[EDGE_RIGHT].type
 		);
 
 		/* print the bottom edge */
 		printf(
 			"|   %c%hu   |   %c%hu   |   %c%hu   |\n",
-			puzzle->pieces[piece].edges[BOTTOM].color,
-			puzzle->pieces[piece].edges[BOTTOM].type,
+			puzzle->pieces[piece].edges[EDGE_BOTTOM].color,
+			puzzle->pieces[piece].edges[EDGE_BOTTOM].type,
 
-			puzzle->pieces[piece+1].edges[BOTTOM].color,
-			puzzle->pieces[piece+1].edges[BOTTOM].type,
+			puzzle->pieces[piece+1].edges[EDGE_BOTTOM].color,
+			puzzle->pieces[piece+1].edges[EDGE_BOTTOM].type,
 
-			puzzle->pieces[piece+2].edges[BOTTOM].color,
-			puzzle->pieces[piece+2].edges[BOTTOM].type
+			puzzle->pieces[piece+2].edges[EDGE_BOTTOM].color,
+			puzzle->pieces[piece+2].edges[EDGE_BOTTOM].type
 		);
 	}
 	printf("+--------+--------+--------+\n");

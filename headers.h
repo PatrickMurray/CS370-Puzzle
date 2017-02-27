@@ -18,14 +18,22 @@
 
 #include <unistd.h>
 
-/* function benchmarking */
-#include <time.h>
+
+#define EDGE_TOP    0
+#define EDGE_RIGHT  1
+#define EDGE_BOTTOM 2
+#define EDGE_LEFT   3
 
 
-#define TOP    0
-#define RIGHT  1
-#define BOTTOM 2
-#define LEFT   3
+#define PIECE_TOP_LEFT      0
+#define PIECE_TOP_CENTER    1
+#define PIECE_TOP_RIGHT     2
+#define PIECE_MIDDLE_LEFT   3  
+#define PIECE_MIDDLE_CENTER 4
+#define PIECE_MIDDLE_RIGHT  5
+#define PIECE_BOTTOM_LEFT   6
+#define PIECE_BOTTOM_CENTER 7
+#define PIECE_BOTTOM_RIGHT  8
 
 
 // depth first search - halt at no solution, continue on next lexicographical
@@ -71,9 +79,10 @@ int main(int, char**);
 
 
 /* puzzle.c */
-struct Puzzle* puzzle_parse(char*);
-void           puzzle_print(struct Puzzle*);
-void           puzzle_print_matrix(struct Puzzle*);
+void puzzle_parse(char*, struct Puzzle*);
+int  puzzle_valid(struct Puzzle*);
+void puzzle_print(struct Puzzle*);
+void puzzle_print_matrix(struct Puzzle*);
 
 
 /* piece.c */

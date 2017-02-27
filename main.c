@@ -8,7 +8,7 @@
 int
 main(int argc, char** argv)
 {
-	struct Puzzle* initial_state;
+	struct Puzzle initial_state;
 	/*size_t         num_solutions;
 	struct Puzzle* solution_states;*/
 
@@ -32,13 +32,15 @@ main(int argc, char** argv)
 		exit(EXIT_FAILURE);
 	}
 
-	initial_state = puzzle_parse(argv[1]);
+	puzzle_parse(argv[1], &initial_state);
 
 	/* memcpy() */
 
-	puzzle_print(initial_state);
+	puzzle_print(&initial_state);
 
-	free(initial_state);
+	piece_rotate(&initial_state.pieces[PIECE_MIDDLE_CENTER], 1);
+
+	puzzle_print(&initial_state);
 
 	return EXIT_SUCCESS;
 }
