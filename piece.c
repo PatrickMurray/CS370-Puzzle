@@ -20,20 +20,13 @@ piece_rotate(struct Piece* piece, int shift)
 	{
 		swp = (idx + shift) % 4;
 
-		printf("%i -> %i\n", idx, swp);
-
-		
-		printf("%i = %c\n", idx, piece->edges[idx].color);
 		piece->edges[idx].color ^= piece->edges[swp].color;
 		piece->edges[swp].color ^= piece->edges[idx].color;
 		piece->edges[idx].color ^= piece->edges[swp].color;
-		printf("%i = %c\n", idx, piece->edges[idx].color);
 
-		printf("%i = %i\n", idx, piece->edges[idx].type);
 		piece->edges[idx].type ^= piece->edges[swp].type;
 		piece->edges[swp].type ^= piece->edges[idx].type;
 		piece->edges[idx].type ^= piece->edges[swp].type;
-		printf("%i = %i\n", idx, piece->edges[idx].type);
 	}
 
 	return;
