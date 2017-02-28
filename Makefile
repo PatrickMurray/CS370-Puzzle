@@ -5,7 +5,7 @@ SRC     := main.c puzzle.c piece.c edge.c permutations.c
 HEADERS := headers.h
 FILES   := Makefile
 
-CFLAGS      := -g -pg -Wall -Werror -Wpedantic
+CFLAGS      := -g -pg -Wall -Werror -Wpedantic -Ofast
 OBJ         := $(SRC:.c=.o)
 LINUX_LINKS := -lbsd
 

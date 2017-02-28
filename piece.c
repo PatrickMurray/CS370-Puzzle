@@ -8,26 +8,18 @@
 void
 piece_rotate(struct Piece* piece, int shift)
 {
-	short idx;
-	short swp;
-
-	if (shift == 0 || (shift %= 4) == 0)
+	if (shift == 0)
 	{
 		return;
 	}
 
-	for (idx = EDGE_TOP; idx <= EDGE_LEFT; idx++)
+	if ((shift %= 4) == 0)
 	{
-		swp = (idx + shift) % 4;
-
-		piece->edges[idx].color ^= piece->edges[swp].color;
-		piece->edges[swp].color ^= piece->edges[idx].color;
-		piece->edges[idx].color ^= piece->edges[swp].color;
-
-		piece->edges[idx].type ^= piece->edges[swp].type;
-		piece->edges[swp].type ^= piece->edges[idx].type;
-		piece->edges[idx].type ^= piece->edges[swp].type;
+		return;
 	}
+
+	piece->offset += shift;
+	piece->offset %= 4;
 
 	return;
 }

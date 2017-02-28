@@ -59,6 +59,7 @@ struct Edge {
  */
 struct Piece {
 	short       identifier;
+	short       offset;
 	struct Edge edges[4];
 };
 
